@@ -1,0 +1,502 @@
+outline entries: 1454 depths: [0]
+[d0] 'Chapter 1'               p22  | next: Safety, Ground Operations, & Servicing
+[d0] 'Chapter 2'               p50  | next: Regulations, Maintenance Forms, Records, & Publications
+[d0] 'Appendix A—Major Alterations, Major Repairs, and Preventive Maintenance' p67  | next: Appendix B—Recording of Major Repairs and Major Alterations
+[d0] 'Appendix B—Recording of Major Repairs and Major Alterations' p69  | next: Appendix C—(Reserved)
+[d0] 'Appendix C—(Reserved)'   p69  | next: Appendix D—Scope and Detail of Items To Be Included in Annual and 100-Hour Inspections
+[d0] 'Appendix D—Scope and Detail of Items To Be Included in Annual and 100-Hour Inspections' p69  | next: Appendix E—Altimeter System Test and Inspection
+[d0] 'Appendix E—Altimeter System Test and Inspection' p69  | next: Appendix F—ATC Transponder Tests and Inspections
+[d0] 'Appendix F—ATC Transponder Tests and Inspections' p69  | next: 14 CFR Part 91—General Operating and Flight Rules
+[d0] 'Chapter 3'               p96  | next: Mathematics in Aviation Maintenance
+[d0] 'Chapter 4'               p124  | next: Aircraft Drawings
+[d0] 'Chapter 5'               p150  | next: Physics for Aviation
+[d0] 'Chapter 6'               p212  | next: Aircraft Weight & Balance
+[d0] 'Chapter 7'               p245  | next: Aircraft Materials, Hardware, & Processes
+[d0] 'Chapter 8'               p325  | next: Cleaning & Corrosion Control
+[d0] 'Chapter 9'               p354  | next: Fluid Lines & Fittings
+[d0] 'Chapter 10'              p377  | next: Inspection Concepts & Techniques
+[d0] 'Chapter 11'              p416  | next: Hand Tools & Measuring Devices
+[d0] 'Chapter 12'              p442  | next: Fundamentals of Electricity & Electronics
+[d0] 'Chapter 13'              p616  | next: Mechanic Privileges & Limitations
+[d0] 'Chapter 14'              p624  | next: Human Factors
+[d0] 'Glossary'                p656  | next: Index
+[d0] 'Index'                   p667  | next: 
+first outline entries: [(0, 'Chapter 1', 22), (0, 'Safety, Ground Operations, & Servicing', 22), (0, 'Shop Safety', 22)]
+===== PAGE 1 (2 chars) =====
+ 
+
+===== PAGE 2 (145 chars) =====
+Aviation Maintenance 
+Technician Handbook–General
+U.S. Department of Transportation
+FEDERAL AVIATION ADMINISTRATION
+Flight Standards Service
+2023
+===== PAGE 3 (2463 chars) =====
+ii
+The Aviation Maintenance Technician Handbook–General (F AA-H-8083-30B) was developed as one of a series of three 
+handbooks for persons preparing for mechanic certification with airframe or powerplant ratings, or both. It is intended that 
+this handbook will provide basic information on principles, fundamentals, and technical procedures in the subject matter 
+areas common to both the airframe and powerplant ratings. Emphasis in this volume is on theory and methods of application.
+The handbook is designed to aid students enrolled in a formal course of instruction preparing for FAA certification as a 
+maintenance technician as well as for current technicians who wish to improve their knowledge. This volume contains 
+information on mathematics, aircraft drawings, weight and balance, aircraft materials, processes and tools, physics, electricity, 
+inspection, ground operations, and FAA regulations governing the certification and work of maintenance technicians. New to 
+this volume is a section addressing how successful aviation maintenance technicians incorporate knowledge and awareness 
+of ethics, professionalism and human factors in the field.
+Because there are so many different types of airframes and powerplants in use today, it is reasonable to expect that differences 
+exist in the components and systems of each. To avoid undue repetition, the practice of using representative systems and 
+units is implemented throughout the handbook. Subject matter treatment is from a gener
+===== PAGE 4 (2714 chars) =====
+iii
+The Aviation Maintenance Technician Handbook–General (F AA-H-8083-30B)  was produced by the Federal Aviation 
+Administration (FAA). The FAA wishes to acknowledge the following contributors:
+• AERO Specialties, Inc. (www.aerospecialties.com) for images used in Chapter 1
+• Dtom, Wikimedia Commons, for imagery used in Chapter 1
+• Rama, Wikimedia Commons, Cc-by-sa-2.0-fr, for imagery used in Chapter 1
+• ATA e-Business Program (www.ataebiz.org), for the ATA iSpec 2200 Standard Numbering System sample used in 
+Chapters 2, 6, and 10
+• Avsoft International for images used in Chapter 4
+• Genesys Aerosystems (www.genesys-aerosystems.com) for images used in Chapter 4
+• Plustar (www.plustar.com) Fluid/Pneumatic Line Identification Tapes for images used in Chapter 4 
+• Burkhard Domke (http://www.b-domke.de/AviationImages.html) for imagery used in Chapter 5
+• Adrian Pingstone for imagery used in Chapter 5
+• Elisabeth Klimesch for imagery used in Chapter 5
+• Jcmurphy, Wikimedia Commons, for imagery used in Chapter 5
+• Paul Hamilton for imagery used in Chapter 5
+• Larry Jackson with Jackson Aircraft Weighing Service (www.jawsscales.com) for images used in Chapter 6
+• Paul New with Tennessee Aircraft Services, Inc. (www.tennesseeaircraft.net) for images used in Chapter 6
+• Tysto, Wikimedia Commons, for imagery used in Chapter 6
+• Immaculate Flight (www.immaculateflight.com) for images used in Chapter 8
+• Jaypee, Wikimedia Commons, for imagery used in Chapter 8
+• Graham Tool Co., Inc. (www
+===== PAGE 5 (5325 chars) =====
+iv
+Chapter 1
+Safety, Ground Operations, & Servicing ...........1-1
+Shop Safety ........................................................... 1-1
+Electrical Safety ................................................. 1-1
+Physiological Safety ........................................1-1
+Fire Safety .......................................................1-1
+Safety Around Compressed Gases  ...................1-2
+Safety Around Hazardous Materials  .................. 1-2
+Safety Around Machine Tools ............................. 1-2
+Flight Line Safety ...................................................1-4
+Hearing Protection ............................................. 1-4
+Foreign Object Damage (FOD) ..........................1-4
+Safety Around Airplanes .....................................1-4
+Safety Around Helicopters .................................. 1-4
+Fire Safety .......................................................... 1-5
+Fire Protection ....................................................... 1-5
+Requirements for Fire to Occur .......................... 1-5
+Classification of Fires .........................................1-5
+Types and Operation of Shop and Flight Line 
+Fire Extinguishers .............................................. 1-5
+Inspection of Fire Extinguishers .........................1-7
+Identifying Fire Extinguishers .............................1-8
+Using Fire Extinguishers .................................... 1-8
+Tie-Down Procedures ..................................
+===== PAGE 6 (5037 chars) =====
+v
+14 CFR Part 39—Airworthiness Directives .....2-8
+14 CFR Part 43—Maintenance, Preventive 
+Maintenance, Rebuilding, and Alteration ........ 2-8
+14 CFR Part 45—Identification and 
+Registration Marking .......................................2-8
+14 CFR Part 47—Aircraft Registration ..........2-10
+14 CFR Part 65—Certification: Airmen 
+Other Than Flight Crewmembers ..................2-10
+14 CFR Part 91—General Operating and 
+Flight Rules ...................................................2-10
+14 CFR Part 119—Certification: Air 
+Carriers and Commercial Operators ............. 2-10
+14 CFR Part 121—Operating 
+Requirements: Domestic, Flag, and 
+Supplemental Operations  .............................2-11
+14 CFR Part 125—Certification and 
+Operations: Airplanes Having a Seating 
+Capacity of 20 or More Passengers or 
+a Maximum Payload Capacity of 6,000 
+Pounds or More; and Rules Governing 
+Persons on Board Such Aircraft  ...................2-12
+14 CFR Part 135—Operating 
+Requirements: Commuter and On-Demand 
+Operations and Rules Governing Persons 
+on Board Such Aircraft  ................................. 2-12
+14 CFR Part 145—Repair Stations ...............2-13
+14 CFR Part 147—Aviation Maintenance 
+Technician Schools .......................................2-13
+14 CFR Part 183—Representatives of the 
+Administrator .................................................2-13
+Explanation of Primary Regulations (Parts 43 
+and 91) ................................................................2-14
+14
+===== PAGE 7 (6272 chars) =====
+vi
+Applicability and Compliance ........................ 2-27
+Alternative Method of Compliance ................2-27
+Special Airworthiness Information Bulletin 
+(SAIB) ...............................................................2-27
+Aircraft Specifications .......................................2-27
+Supplemental Type Certificates (STC) .............2-27
+Type Certificate Data Sheets (TCDS) ..............2-30
+FAA Handbooks & Manuals .................................2-30
+Non-FAA Documents ...........................................2-30
+Air Transport Association ATA iSpec 2200  ...... 2-30
+Manufacturers’ Published Data ........................ 2-30
+Airworthiness Limitations ................................. 2-33
+Service Bulletins (SB) ...................................... 2-33
+Structural Repair Manual (SRM) ......................2-33
+Forms .................................................................. 2-33
+Airworthiness Certificates ................................. 2-33
+Aircraft Registration .......................................... 2-37
+Radio Station License  .....................................2-38
+FAA Form 337—Major Repair and Alteration  .. 2-38
+Records ...............................................................2-39
+Making Maintenance Record Entries ............... 2-39
+Temporary Records—14 CFR Part 91 
+Section 91.417(a)(1) and (b)(1) ........................ 2-39
+Permanent Records—14 CFR Part 91, 
+Section 91.417(a)(2) and (b)(2) ........................ 2-39
+El
+===== PAGE 8 (6759 chars) =====
+vii
+Use of Parentheses .......................................... 3-17
+Order of Operation ...........................................3-17
+Order of Operation for Algebraic Equations ..... 3-18
+Computing Area of Two-Dimensional Solids ....... 3-18
+Rectangle .........................................................3-18
+Square ..............................................................3-18
+Triangle ............................................................ 3-18
+Parallelogram ...................................................3-18
+Trapezoid ......................................................... 3-18
+Circle ................................................................3-19
+Ellipse ...............................................................3-19
+Units of Area .....................................................3-20
+Computing Volume of Three-Dimensional Solids 3-20
+Rectangular Solid .............................................3-20
+Cube ................................................................. 3-21
+Cylinder ............................................................3-21
+Sphere ..............................................................3-22
+Cone ................................................................. 3-23
+Units of Volume ................................................3-23
+Computing Surface Area of Three-Dimensional 
+Solids ...................................................................3-23
+Rectangular Solid .....................................
+===== PAGE 9 (6815 chars) =====
+viii
+Graphs & Charts ..................................................4-23
+Reading & Interpreting Graphs & Charts ......... 4-23
+Nomograms ...................................................... 4-23
+Microfilm & Microfiche ......................................... 4-23
+Digital Images ......................................................4-23
+Chapter 5
+Physics for Aviation ............................................5-1
+Matter  ................................................................... 5-1
+Characteristics of Matter  ................................... 5-1
+Mass & Weight ................................................5-1
+Attraction .........................................................5-1
+Porosity ........................................................... 5-1
+Impenetrability .................................................5-1
+Density  ........................................................... 5-2
+Specific Gravity  .............................................. 5-2
+Energy ................................................................... 5-2
+Potential Energy .................................................5-2
+Kinetic Energy ....................................................5-3
+Force, Work, Power, & Torque ...............................5-4
+Force ..................................................................5-4
+Work ...................................................................5-4
+Friction & Work ................................................... 5-4
+
+===== PAGE 10 (6242 chars) =====
+ix
+Four Forces of Flight ........................................5-36
+Bernoulli’s Principle and Subsonic Flow ...........5-37
+Lift and Newton’s Third Law .............................5-37
+Airfoils .............................................................. 5-38
+Camber  .........................................................5-38
+Chord Line  .....................................................5-38
+Relative Wind  ................................................5-38
+Angle of Attack  ...............................................5-38
+Boundary Layer Airflow  ...................................5-39
+Boundary Layer Control ................................5-39
+Wingtip Vortices ............................................... 5-40
+Axes of an Aircraft ............................................5-40
+Aircraft Stability  ...............................................5-40
+Static Stability ............................................... 5-40
+Dynamic Stability .......................................... 5-40
+Longitudinal Stability ..................................... 5-41
+Lateral Stability ............................................. 5-42
+Directional Stability ....................................... 5-42
+Dutch Roll ..................................................... 5-42
+Flight Control Surfaces ..................................... 5-42
+Flight Controls & the Lateral Axis ..................5-42
+Flight Controls and the Longitudinal Axis ......5-43
+Flight Controls and the Vertical Axis
+===== PAGE 11 (6204 chars) =====
+x
+Helicopter Weight & Balance ...............................6-25
+General Concepts ............................................ 6-25
+Helicopter Weighing ......................................... 6-25
+Weight and Balance—Weight-Shift Control 
+Aircraft and Powered Parachutes ........................6-26
+Weight-Shift Control Aircraft .............................6-27
+Powered Parachutes ........................................6-28
+Built-In Electronic Weighing ............................. 6-28
+Mean Aerodynamic Chord ................................6-28
+Weight & Balance Records ..................................6-31
+Chapter 7
+Aircraft Materials, Hardware, & Processes  ......7-1
+Properties of Metals ........................................... 7-1
+Hardness ......................................................... 7-1
+Strength .......................................................... 7-1
+Density ............................................................ 7-1
+Malleability ...................................................... 7-1
+Ductility ........................................................... 7-1
+Elasticity ..........................................................7-1
+Toughness .......................................................7-1
+Brittleness ....................................................... 7-1
+Fusibility ..........................................................7-2
+Conductivity .................................................... 7-2
+Thermal Expansion .............
+===== PAGE 12 (6218 chars) =====
+xi
+Seals.................................................................... 7-33
+Packings ........................................................... 7-34
+O-Ring Packings ........................................... 7-34
+V-Ring Packings ............................................ 7-35
+U-Ring Packings ...........................................7-35
+Gaskets ............................................................7-35
+Wipers ..............................................................7-35
+Sealing Compounds .........................................7-35
+One Part Sealants .........................................7-36
+Two Part Sealants .........................................7-36
+Aircraft Hardware................................................. 7-36
+Identification .....................................................7-37
+Threaded Fasteners .........................................7-37
+Classification of Threads ...............................7-37
+Aircraft Bolts .....................................................7-37
+General Purpose Bolts ..................................7-37
+Close Tolerance Bolts ...................................7-38
+Internal Wrenching Bolts ............................... 7-38
+Identification and Coding .............................. 7-38
+Special-Purpose Bolts ...................................7-39
+Aircraft Nuts ..................................................... 7-41
+Non-Self-Locking Nuts .................................. 7-41
+Self-Locking Nuts ...
+===== PAGE 13 (6163 chars) =====
+xii
+Geographical Location ....................................8-2
+Foreign Material .............................................. 8-2
+Micro-organisms ............................................. 8-2
+Manufacturing Processes ............................... 8-2
+Types of Corrosion .............................................8-2
+Direct Chemical Attack ....................................8-2
+Electrochemical Attack ....................................8-3
+Forms of Corrosion ............................................ 8-5
+Surface Corrosion ...........................................8-5
+Filiform Corrosion  ...........................................8-5
+Pitting Corrosion ............................................. 8-6
+Dissimilar Metal Corrosion ..............................8-6
+Concentration Cell Corrosion ..........................8-6
+Intergranular Corrosion ...................................8-7
+Exfoliation Corrosion .......................................8-7
+Stress-Corrosion/Cracking ..............................8-7
+Fretting Corrosion ...........................................8-9
+Fatigue Corrosion ........................................... 8-9
+Galvanic Corrosion ....................................... 8-10
+Common Corrosive Agents ..............................8-10
+Preventive Maintenance ......................................8-10
+Inspection .............................................................8-11
+Corrosion Prone Areas .........................................8-11
+Exha
+===== PAGE 14 (6394 chars) =====
+xiii
+Chapter 9
+Fluid Lines & Fittings ..........................................9-1
+Introduction ............................................................9-1
+Rigid Fluid Lines ....................................................9-1
+Tubing Materials .................................................9-1
+Copper ............................................................9-1
+Aluminum Alloy Tubing ....................................9-1
+Steel ................................................................9-1
+Titanium 3AL–2.5V ..........................................9-1
+Material Identification ......................................... 9-1
+Sizes .................................................................. 9-2
+Fabrication of Metal Tube Lines .........................9-2
+Tube Cutting ....................................................9-2
+Tube Bending ..................................................9-2
+Alternative Bending Methods .............................9-3
+Tube Flaring ....................................................9-3
+Instructions for Rolling-Type Flaring Tools ......... 9-4
+Double Flaring ....................................................9-5
+Double Flaring Instructions .............................9-5
+Fittings ............................................................ 9-5
+Flareless Fittings .............................................9-5
+Beading ...........................................................9-7
+Fluid Line Identification .....................
+===== PAGE 15 (6444 chars) =====
+xiv
+Pulse Echo ..................................................10-22
+Through-Transmission ................................ 10-23
+Resonance  .................................................10-24
+Ultrasonic Instruments ................................... 10-26
+Reference Standards ..................................... 10-26
+Couplants .......................................................10-26
+Inspection of Bonded Structures ....................... 10-26
+Types of Defects ............................................ 10-28
+Acoustic Emission Inspection ......................... 10-28
+Magnetic Particle Inspection .......................... 10-29
+Development of Indications .........................10-29
+Types of Discontinuities Disclosed ..............10-29
+Preparation of Parts for Testing................... 10-30
+Effect of Flux Direction ................................10-30
+Effect of Flux Density .................................. 10-30
+Magnetizing Methods ..................................10-31
+Identification of Indications ..........................10-31
+Magnaglo Inspection ......................................10-32
+Magnetizing Equipment .............................. 10-32
+Indicating Mediums ..................................... 10-33
+Demagnetizing ............................................ 10-33
+Standard Demagnetizing Practice .............. 10-34
+Radiographic ...............................................10-34
+Radiographic Inspection .................................10-
+===== PAGE 16 (6449 chars) =====
+xv
+Electron Flow ................................................. 12-14
+Electromotive Force (Voltage) ...........................12-14
+Current............................................................... 12-16
+Ohm’s Law (Resistance) ................................... 12-17
+Resistance of a Conductor ................................12-18
+Factors Affecting Resistance .......................... 12-18
+Resistance and Relation to Wire Sizing .........12-20
+Circular Conductors (Wires/Cables) ........... 12-20
+Rectangular Conductors (Bus Bars) ...........12-20
+Power and Energy .............................................12-20
+Power in an Electrical Circuit ......................... 12-20
+Power Formulas Used in the Study of 
+Electricity  ....................................................... 12-21
+Power in a Series & Parallel Circuit ............... 12-22
+Energy in an Electrical Circuit ........................12-22
+Sources of Electricity ...................................... 12-22
+Pressure Source ......................................... 12-22
+Chemical Source .........................................12-23
+Thermal Sources ......................................... 12-23
+Light Sources .............................................. 12-23
+Schematic Representation of Electrical 
+Components ...................................................12-23
+Conductors ..................................................12-23
+Types of Resistors .............................................12-24
+Fix
+===== PAGE 17 (6496 chars) =====
+xvi
+Tantalum ......................................................... 12-52
+Polyester Film ................................................ 12-52
+Oil Capacitors .................................................12-53
+Variable Capacitors .....................................12-53
+Trimmers ........................................................12-53
+Varactors ........................................................12-53
+Capacitors in Series .......................................12-53
+Capacitors in Parallel .....................................12-54
+Capacitors in Alternating Current ...................12-54
+Capacitive Reactance Xc ...............................12-54
+Sample Problem: ............................................12-55
+Solution: ......................................................... 12-55
+Capacitive Reactances in Series and in 
+Parallel  .......................................................... 12-55
+Phase of Current and Voltage in Reactive 
+Circuits  ..........................................................12-55
+Inductance ......................................................... 12-56
+Characteristics of Inductance .........................12-56
+The RL Time Constant ................................... 12-56
+Physical Parameters ......................................12-56
+Self-Inductance .............................................. 12-57
+Types of Inductors .......................................... 12-57
+Units of Inductance ..................................
+===== PAGE 18 (6276 chars) =====
+xvii
+Secondary Cell ...............................................12-87
+Battery Ratings ...............................................12-89
+Life Cycle of a Battery ....................................12-89
+Lead-Acid Battery Testing Methods ................12-90
+Lead-Acid Battery Charging Methods ............ 12-91
+Nickel-Cadmium Batteries ................................. 12-91
+Chemistry and Construction ........................... 12-91
+Operation of Nickel-Cadmium Cells ...............12-92
+General Maintenance and Safety 
+Precautions .................................................12-92
+Sealed Lead Acid (SLA) Batteries ..................12-92
+Lithium-Ion Batteries.......................................... 12-93
+Inverters............................................................. 12-93
+Rotary Inverters ..............................................12-94
+Permanent Magnet Rotary Inverter ................12-94
+Inductor-Type Rotary Inverter ........................ 12-94
+Static Inverters ............................................... 12-94
+Semiconductors .................................................12-95
+Doping ............................................................ 12-96
+PN Junctions & the Basic Diode .................... 12-98
+Forward Biased Diode ....................................12-98
+Reverse Biased Diode ................................... 12-99
+Rectifiers.......................................................... 12-100
+Half-Wave Rectifier ..................
+===== PAGE 19 (6144 chars) =====
+xviii
+Armature ...................................................... 12-130
+Gramme-Ring Armature ............................12-130
+Drum-Type Armature .................................12-130
+Commutators ................................................ 12-130
+Armature Reaction ....................................... 12-131
+Compensating Windings ..............................12-131
+Interpoles ..................................................... 12-132
+Types of DC Generators .............................. 12-132
+Series Wound DC Generators .................. 12-132
+Shunt Wound DC Generators ...................12-133
+Compound Wound DC Generators ...........12-134
+Generator Ratings ........................................ 12-134
+Generator Terminals .....................................12-135
+DC Generator Maintenance............................. 12-135
+Inspection .....................................................12-135
+Condition of Generator Brushes ................... 12-136
+DC Motors ....................................................12-137
+Force Between Parallel Conductors .............12-138
+Developing Torque ....................................... 12-138
+Basic DC Motor ............................................12-138
+Position A ..................................................12-139
+Position B ..................................................12-139
+Position C .................................................. 12-139
+Position D .........................................
+===== PAGE 20 (6106 chars) =====
+xix
+Section 65.15, Duration of Certificates .............13-1
+Section 65.16, Change of Name: 
+Replacement of Lost or Destroyed Certificate . 13-2
+Section 65.17, Test: General Procedure .......... 13-2
+Section 65.18, Written Tests: Cheating or 
+Other Unauthorized Content ............................ 13-2
+Section 65.19, Retesting After Failure .............. 13-2
+Section 65.20, Applications, Certificates, 
+Logbooks, Reports, and Records: 
+Falsification, Reproduction, or Alteration ..........13-2
+Section 65.21, Change of Address ...................13-2
+Refusal to Submit to a Drug or Alcohol Test .....13-2
+Mechanic Certification: Subpart D—Mechanics 
+(by 14 CFR Section) ............................................13-3
+Section 65.71, Eligibility Requirements: 
+General ............................................................ 13-3
+Section 65.73, Ratings .....................................13-3
+Section 65.75, Knowledge Requirements ........13-3
+Section 65.77, Experience Requirements  .......13-3
+Section 65.79, Skill Requirements ................... 13-3
+Section 65.80, Certificated Aviation 
+Maintenance .....................................................13-4
+Technician School Students ............................. 13-4
+Section 65.81, General Privileges and 
+Limitations ........................................................13-4
+Section 65.83, Recent Experience 
+Requirements ................................................... 13-4
+Section 65.85, Airframe Rating: Additional 
+Pri
+===== PAGE 21 (157 chars) =====
+xx
+Glossary ..............................................................G-1
+Index ......................................................................I-1

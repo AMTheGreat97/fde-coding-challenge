@@ -6,6 +6,7 @@ handbook PDF page (contract v1.1, docs/decisions/CHANGE_REQUEST.md).
 
 Run: python -m ui.app            (local, http://127.0.0.1:7860)
      GRADIO_SHARE=1 PORT=7861 python -m ui.app   (adds a public share link)
+     HOST=0.0.0.0 python -m ui.app               (hosted, e.g. Render; reads $PORT)
 """
 from __future__ import annotations
 
@@ -282,15 +283,18 @@ def build_ui() -> gr.Blocks:
     return demo
 
 
+def launch_kwargs() -> dict:
+    """Launch settings shared by local runs and hosted start commands (HOST=0.0.0.0 on Render)."""
+    return {"server_name": os.environ.get("HOST", "127.0.0.1"),
+            "server_port": int(os.environ.get("PORT", "7860")),
+            "share": os.environ.get("GRADIO_SHARE") == "1",
+            "allowed_paths": [str(PDF_DIR)],  # display-only PDF links; nothing else is served
+            "css": CSS}
+
+
 def main() -> None:
     os.chdir(ROOT)  # PDF links are served relative to the repo root
-    build_ui().queue().launch(
-        server_name="127.0.0.1",
-        server_port=int(os.environ.get("PORT", "7860")),
-        share=os.environ.get("GRADIO_SHARE") == "1",
-        allowed_paths=[str(PDF_DIR)],
-        css=CSS,
-    )
+    build_ui().queue().launch(**launch_kwargs())
 
 
 if __name__ == "__main__":

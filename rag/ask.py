@@ -1,15 +1,20 @@
 """rag.ask: intent -> per-sub-question hybrid search (dense + BM25 + RRF) -> LLM relevance
-assessment -> context expansion -> grounded answer with citations (MASTER_SPEC contract B).
+assessment -> context expansion -> grounded answer with citations (MASTER_SPEC contract B,
+plus the v1.1 traceability fields in docs/decisions/CHANGE_REQUEST.md).
 Never raises; errors are returned in the `error` field.
 """
+import json
+import logging
 import re
 import threading
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 
 import numpy as np
 
-from rag.llm import ProviderError, chat_json, embed, load_env, model_name
+from rag.llm import ROOT, ProviderError, chat_json, embed, load_env, model_name
 from rag.store import StoreError, load_store
 from rag.text import tokenize
 
@@ -25,8 +30,16 @@ TOPIC_BOOST = 0.004
 SMALL_SECTION_TOKENS = 1500
 CONTEXT_BUDGET_TOKENS = 12000
 FAST_TIMEOUT_S, CALL_TIMEOUT_S = 60, 30
+LOG_PATH = ROOT / "logs" / "queries.jsonl"
 
-_store, _store_lock = None, threading.Lock()
+log = logging.getLogger("rag")
+if not log.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s rag %(message)s", "%H:%M:%S"))
+    log.addHandler(_handler)
+    log.setLevel(logging.INFO)
+
+_store, _store_lock, _log_lock = None, threading.Lock(), threading.Lock()
 
 
 def _obj(props):
@@ -53,6 +66,35 @@ ANSWER_SCHEMA = _obj({
 })
 
 
+class Tracer:
+    """Collects one entry per pipeline step and streams it to an optional callback."""
+
+    def __init__(self, request_id, on_step=None):
+        self.request_id, self.on_step = request_id, on_step
+        self.steps, self.lock = [], threading.Lock()
+
+    def add(self, step, tool, detail, started, *, model=None, status="ok", cost=0.0):
+        entry = {"step": step, "tool": tool, "model": model, "detail": detail,
+                 "ms": int((time.time() - started) * 1000), "status": status, "cost_usd": round(cost, 6)}
+        with self.lock:
+            self.steps.append(entry)
+        log.info("%s %-22s %-22s %5dms %s %s", self.request_id, step, tool, entry["ms"], status, detail[:160])
+        if self.on_step:
+            try:
+                self.on_step(entry)
+            except Exception:
+                pass
+        return entry
+
+    @property
+    def cost(self):
+        return round(sum(s["cost_usd"] for s in self.steps), 6)
+
+
+def _cost(record):
+    return float((record or {}).get("usage", {}).get("cost") or 0)
+
+
 def get_store():
     global _store
     with _store_lock:
@@ -62,16 +104,13 @@ def get_store():
         return _store
 
 
-def _result(mode, started, **fields):
-    base = {"answer_markdown": "", "citations": [], "intent": None, "sub_questions": [], "coverage": None,
-            "insufficient_evidence": False, "mode": mode, "latency_ms": 0, "error": None}
-    base.update(fields)
-    base["latency_ms"] = int((time.time() - started) * 1000)
-    return base
-
-
-def _error(code, message):
-    return {"code": code, "message": message}
+def source_link(page_label, doc_id):
+    """Display-only link target: the chapter PDF and the page within it (label 13-4 -> page 4)."""
+    try:
+        page = int(str(page_label).rsplit("-", 1)[1])
+    except (IndexError, ValueError):
+        page = 1
+    return {"pdf_file": f"DATA/chapters/{doc_id}.pdf", "pdf_file_page": page}
 
 
 def _content_text(content):
@@ -98,47 +137,57 @@ def classify_intent(question, history, store):
             "question to ask the user only if the question cannot be answered without it, else null.")},
         {"role": "user", "content": f"Topic list:\n{topics}\n\nConversation so far:\n{convo or '(none)'}\n\nQuestion: {question}"},
     ]
-    out, _ = chat_json(messages, "intent", INTENT_SCHEMA, prompt_version="intent.v1", kind="intent",
-                       max_tokens=1500, timeout=CALL_TIMEOUT_S)
+    out, rec = chat_json(messages, "intent", INTENT_SCHEMA, prompt_version="intent.v1", kind="intent",
+                         max_tokens=1500, timeout=CALL_TIMEOUT_S)
     valid = {t["topic_id"] for t in store["taxonomy"]["topics"]}
     out["topics"] = [t for t in out["topics"] if t in valid]
     out["sub_questions"] = [q for q in out["sub_questions"] if q.strip()][:4] or [out["standalone_question"] or question]
-    return out
-
-
-def _rrf(rankings):
-    scores = {}
-    for ranking in rankings:
-        for rank, idx in enumerate(ranking):
-            scores[idx] = scores.get(idx, 0.0) + 1.0 / (RRF_K + rank + 1)
-    return scores
+    return out, rec
 
 
 def search(sub_question, query_vec, keyword_query, intent_topics, store):
-    """Hybrid search for one sub-question; returns [(chunk_idx, rrf_score)] best first."""
-    rankings = []
+    """Hybrid search for one sub-question. Returns (candidates, provenance, stats):
+    candidates = [(chunk_idx, rrf_score)] best first; provenance[idx] = ranks per retriever."""
+    prov, rankings = {}, []
+    stats = {"dense": 0, "section": 0, "bm25": 0}
     if query_vec is not None:
-        rankings.append(list(np.argsort(-(store["vectors"]["chunk"] @ query_vec))[:DENSE_CHUNKS]))
+        dense = list(np.argsort(-(store["vectors"]["chunk"] @ query_vec))[:DENSE_CHUNKS])
+        rankings.append(dense)
+        for r, i in enumerate(dense):
+            prov.setdefault(int(i), {})["dense_rank"] = r + 1
         top_sections = np.argsort(-(store["vectors"]["section"] @ query_vec))[:DENSE_SECTIONS]
         via_sections = []
-        for si in top_sections:
+        for sr, si in enumerate(top_sections):
             for cid in store["sections"][si]["chunk_ids"]:
-                via_sections.append(store["chunk_index"][cid])
+                i = store["chunk_index"][cid]
+                via_sections.append(i)
+                prov.setdefault(i, {}).setdefault("section_rank", sr + 1)
         rankings.append(via_sections)
+        stats["dense"], stats["section"] = len(dense), len(top_sections)
     tokens = tokenize(sub_question + " " + keyword_query)
     if tokens:
         bm25 = store["bm25"].get_scores(tokens)
-        rankings.append([i for i in np.argsort(-bm25)[:BM25_TOP] if bm25[i] > 0])
-    scores = _rrf(rankings)
+        top = [int(i) for i in np.argsort(-bm25)[:BM25_TOP] if bm25[i] > 0]
+        rankings.append(top)
+        for r, i in enumerate(top):
+            prov.setdefault(i, {})["bm25_rank"] = r + 1
+        stats["bm25"] = len(top)
+    scores = {}
+    for ranking in rankings:
+        for rank, idx in enumerate(ranking):
+            scores[int(idx)] = scores.get(int(idx), 0.0) + 1.0 / (RRF_K + rank + 1)
     wanted = set(intent_topics)
     if wanted:
         for idx in scores:  # soft boost only; topics never filter
             scores[idx] += TOPIC_BOOST * len(wanted & set(store["chunks"][idx]["topics"]))
-    return sorted(scores.items(), key=lambda kv: -kv[1])[:CANDIDATES]
+    candidates = sorted(scores.items(), key=lambda kv: -kv[1])[:CANDIDATES]
+    for idx, s in candidates:
+        prov[idx]["rrf_score"] = round(s, 5)
+    return candidates, prov, stats
 
 
 def assess_relevance(sub_question, candidates, store):
-    """LLM relevance assessment (replaces a local cross-encoder). Returns {chunk_idx: (score, reason)}."""
+    """LLM relevance assessment (replaces a local cross-encoder). Returns ({chunk_idx: (score, reason)}, record)."""
     passages = "\n\n".join(
         f"[{store['chunks'][i]['chunk_id']}] {store['chunks'][i]['section_path']}\n{store['chunks'][i]['text'][:1200]}"
         for i, _ in candidates)
@@ -149,10 +198,10 @@ def assess_relevance(sub_question, candidates, store):
             "0 = unrelated. Return one score per chunk_id.")},
         {"role": "user", "content": f"Question: {sub_question}\n\nPassages:\n{passages}"},
     ]
-    out, _ = chat_json(messages, "relevance", RELEVANCE_SCHEMA, prompt_version="relevance.v1", kind="relevance",
-                       max_tokens=4000, timeout=CALL_TIMEOUT_S)
+    out, rec = chat_json(messages, "relevance", RELEVANCE_SCHEMA, prompt_version="relevance.v1", kind="relevance",
+                         max_tokens=4000, timeout=CALL_TIMEOUT_S)
     by_id = {store["chunks"][i]["chunk_id"]: i for i, _ in candidates}
-    return {by_id[s["chunk_id"]]: (s["score"], s["reason"]) for s in out["scores"] if s["chunk_id"] in by_id}
+    return {by_id[s["chunk_id"]]: (s["score"], s["reason"]) for s in out["scores"] if s["chunk_id"] in by_id}, rec
 
 
 def expand_context(selected, store):
@@ -175,86 +224,156 @@ def expand_context(selected, store):
             break
         budget -= cost
         contexts[idx] = "\n\n".join(store["chunks"][i]["text"] for i in window)
-    return contexts
+    return contexts, CONTEXT_BUDGET_TOKENS - budget
 
 
-def _citation(n, idx, store, relevance):
+def _citation(n, idx, store, relevance, retrieval, passage):
     c = store["chunks"][idx]
-    snippet = " ".join(c["text"].split())[:240]
     return {"n": n, "section_id": c["section_id"], "doc_id": c["doc_id"], "chapter": c["chapter"],
-            "section_path": c["section_path"], "page_label": c["page_label"], "snippet": snippet,
-            "relevance": relevance}
+            "section_path": c["section_path"], "page_label": c["page_label"],
+            "snippet": " ".join(c["text"].split())[:240], "relevance": relevance,
+            "chunk_id": c["chunk_id"], "pdf_page": c["pdf_page"],
+            "source": source_link(c["page_label"], c["doc_id"]),
+            "retrieval": retrieval, "passage": passage}
 
 
-def ask(question, history=None, mode="fast"):
+def _public_intent(intent):
+    return {"primary": intent["primary"], "intents": intent["intents"], "topics": intent["topics"],
+            "entities": intent["entities"], "needs_clarification": intent["needs_clarification"]}
+
+
+def _write_log(result, question):
+    record = {"ts": datetime.now(timezone.utc).isoformat(), "request_id": result["request_id"],
+              "question": question, "mode": result["mode"], "latency_ms": result["latency_ms"],
+              "cost_usd": result["cost_usd"], "error": result["error"],
+              "insufficient_evidence": result["insufficient_evidence"],
+              "intent": result["intent"], "citations": [c["chunk_id"] for c in result["citations"]],
+              "trace": result["trace"]}
+    try:
+        LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with _log_lock, open(LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except OSError as e:
+        log.warning("could not write %s: %s", LOG_PATH, e)
+
+
+def ask(question, history=None, mode="fast", *, on_step=None):
     started = time.time()
     mode = mode if mode in ("fast", "verify") else "fast"
+    tracer = Tracer(uuid.uuid4().hex[:8], on_step)
+
+    def finish(**fields):
+        result = {"answer_markdown": "", "citations": [], "intent": None, "sub_questions": [], "coverage": None,
+                  "insufficient_evidence": False, "mode": mode, "latency_ms": 0, "error": None,
+                  "request_id": tracer.request_id, "trace": tracer.steps, "cost_usd": 0.0}
+        result.update(fields)
+        result["latency_ms"] = int((time.time() - started) * 1000)
+        result["cost_usd"] = tracer.cost
+        tracer.add("done", "rag.ask", f"{result['latency_ms']} ms total, ${result['cost_usd']:.4f}, "
+                   f"{len(result['citations'])} citations", started,
+                   status="error" if result["error"] else "ok")
+        _write_log(result, question)
+        return result
+
+    t = time.time()
     if not question or not question.strip():
-        return _result(mode, started, error=_error("empty_question", "Please enter a question."))
+        tracer.add("validate", "rag.ask", "empty question", t, status="error")
+        return finish(error={"code": "empty_question", "message": "Please enter a question."})
     if len(question) > MAX_QUESTION_CHARS:
-        return _result(mode, started, error=_error("question_too_long", f"Questions are limited to {MAX_QUESTION_CHARS} characters."))
+        tracer.add("validate", "rag.ask", f"{len(question)} chars > {MAX_QUESTION_CHARS}", t, status="error")
+        return finish(error={"code": "question_too_long", "message": f"Questions are limited to {MAX_QUESTION_CHARS} characters."})
     try:
         store = get_store()
     except (StoreError, OSError) as e:
-        return _result(mode, started, error=_error("index_missing", str(e)))
+        tracer.add("load_index", "pickle", str(e), t, status="error")
+        return finish(error={"code": "index_missing", "message": str(e)})
+    tracer.add("load_index", "pickle (in memory)",
+               f"{len(store['chunks'])} chunks, {len(store['sections'])} sections, {len(store['documents'])} chapters", t)
 
     error = None
+    t = time.time()
     try:
-        intent = classify_intent(question, history, store)
+        intent, rec = classify_intent(question, history, store)
+        tracer.add("intent", "openrouter.chat", f"{intent['primary']}; {len(intent['sub_questions'])} sub-questions; "
+                   f"topics {intent['topics'][:4]}", t, model=rec["model"], cost=_cost(rec))
     except ProviderError as e:
-        error = _error("provider_unavailable", f"Intent step unavailable: {e}")
+        error = {"code": "provider_unavailable", "message": f"Intent step unavailable: {e}"}
         intent = {"standalone_question": question, "primary": "multi_hop", "intents": [], "topics": [],
                   "entities": [], "sub_questions": [question], "keyword_query": "", "needs_clarification": None}
+        tracer.add("intent", "openrouter.chat", str(e), t, model=model_name("LLM_MODEL"), status="error")
     sub_questions = intent["sub_questions"]
 
+    t = time.time()
     try:
         query_vecs = embed(sub_questions, model=model_name("EMBEDDING_MODEL"), timeout=CALL_TIMEOUT_S)
+        tracer.add("embed_query", "openrouter.embeddings", f"{len(sub_questions)} vectors x 1536", t,
+                   model=model_name("EMBEDDING_MODEL"))
     except ProviderError as e:
-        error = error or _error("provider_unavailable", f"Embeddings unavailable, keyword search only: {e}")
+        error = error or {"code": "provider_unavailable", "message": f"Embeddings unavailable, keyword search only: {e}"}
         query_vecs = [None] * len(sub_questions)
+        tracer.add("embed_query", "openrouter.embeddings", f"failed, BM25 only: {e}", t,
+                   model=model_name("EMBEDDING_MODEL"), status="error")
 
-    results = [search(q, v, intent["keyword_query"], intent["topics"], store) for q, v in zip(sub_questions, query_vecs)]
+    results = []
+    for qi, (q, v) in enumerate(zip(sub_questions, query_vecs)):
+        t = time.time()
+        candidates, prov, stats = search(q, v, intent["keyword_query"], intent["topics"], store)
+        results.append((candidates, prov))
+        tracer.add(f"search[{qi + 1}]", "numpy.dense + rank_bm25 + rrf",
+                   f"dense {stats['dense']} chunks, {stats['section']} sections, BM25 {stats['bm25']} -> "
+                   f"RRF top {len(candidates)} for '{q[:60]}'", t)
 
     def assess(args):
-        q, candidates = args
+        qi, q, candidates = args
+        t0 = time.time()
         try:
-            return assess_relevance(q, candidates, store)
-        except ProviderError:
+            scored, rec = assess_relevance(q, candidates, store)
+            kept = sum(1 for s, _ in scored.values() if s >= 2)
+            tracer.add(f"relevance[{qi + 1}]", "openrouter.chat", f"scored {len(scored)}, kept {kept} (score>=2)",
+                       t0, model=rec["model"], cost=_cost(rec))
+            return scored
+        except ProviderError as e:
+            tracer.add(f"relevance[{qi + 1}]", "openrouter.chat", f"failed, using RRF order: {e}", t0,
+                       model=model_name("LLM_MODEL"), status="error")
             return None
     with ThreadPoolExecutor(max_workers=4) as pool:
-        assessments = list(pool.map(assess, zip(sub_questions, results)))
+        assessments = list(pool.map(assess, [(qi, q, r[0]) for qi, (q, r) in enumerate(zip(sub_questions, results))]))
 
-    # Keep relevant chunks per sub-question, best first; remember which sub-question used each.
-    selected, relevance, chunk_subq = [], {}, {}
-    for qi, (candidates, scored) in enumerate(zip(results, assessments)):
+    # Keep relevant chunks per sub-question, best first; remember provenance for each.
+    selected, relevance, retrieval = [], {}, {}
+    for qi, ((candidates, prov), scored) in enumerate(zip(results, assessments)):
         if scored is None:
-            error = error or _error("provider_unavailable", "Relevance assessment unavailable; using fused ranking.")
-            keep = [(i, 2) for i, _ in candidates[:KEEP_PER_SUBQ]]
+            error = error or {"code": "provider_unavailable", "message": "Relevance assessment unavailable; using fused ranking."}
+            keep = [(i, 2, "relevance step unavailable; kept by RRF rank") for i, _ in candidates[:KEEP_PER_SUBQ]]
         else:
-            ranked = sorted(((i, scored[i][0], s) for i, s in candidates if i in scored and scored[i][0] >= 2),
-                            key=lambda t: (-t[1], -t[2]))
-            keep = [(i, sc) for i, sc, _ in ranked[:KEEP_PER_SUBQ]]
-        for i, sc in keep:
-            relevance[i] = max(relevance.get(i, 0), sc)
-            chunk_subq.setdefault(i, set()).add(qi)
+            ranked = sorted(((i, scored[i][0], s, scored[i][1]) for i, s in candidates if i in scored and scored[i][0] >= 2),
+                            key=lambda r: (-r[1], -r[2]))
+            keep = [(i, sc, reason) for i, sc, _, reason in ranked[:KEEP_PER_SUBQ]]
+        for i, sc, reason in keep:
+            if sc > relevance.get(i, -1):
+                relevance[i] = sc
+                retrieval[i] = {"sub_question": sub_questions[qi], "dense_rank": prov[i].get("dense_rank"),
+                                "section_rank": prov[i].get("section_rank"), "bm25_rank": prov[i].get("bm25_rank"),
+                                "rrf_score": prov[i].get("rrf_score"), "relevance_reason": reason}
             if i not in selected:
                 selected.append(i)
 
     if time.time() - started > FAST_TIMEOUT_S:
-        return _result(mode, started, intent=_public_intent(intent),
-                       error=_error("timeout", "Search took too long; please try a narrower question."))
+        return finish(intent=_public_intent(intent),
+                      error={"code": "timeout", "message": "Search took too long; please try a narrower question."})
 
-    contexts = expand_context(selected, store)
+    t = time.time()
+    contexts, used_tokens = expand_context(selected, store)
+    tracer.add("context", "rag.expand_context", f"{len(contexts)} passages, ~{used_tokens} of {CONTEXT_BUDGET_TOKENS} tokens", t)
     numbered = list(contexts)
-    citations = [_citation(n + 1, idx, store, relevance[idx]) for n, idx in enumerate(numbered)]
+    citations = [_citation(n + 1, idx, store, relevance[idx], retrieval[idx], contexts[idx]) for n, idx in enumerate(numbered)]
     insufficient = not numbered
     answer_md = ""
-    sub_out = [{"question": q, "citation_ns": [n + 1 for n, idx in enumerate(numbered) if qi in chunk_subq.get(idx, ())]}
-               for qi, q in enumerate(sub_questions)]
+    sub_out = [{"question": q, "citation_ns": [c["n"] for c in citations if c["retrieval"]["sub_question"] == q]}
+               for q in sub_questions]
 
     if numbered:
-        passages = "\n\n".join(f"[{n + 1}] {store['chunks'][idx]['section_path']} (page {store['chunks'][idx]['page_label']})\n{contexts[idx]}"
-                               for n, idx in enumerate(numbered))
+        passages = "\n\n".join(f"[{c['n']}] {c['section_path']} (page {c['page_label']})\n{c['passage']}" for c in citations)
         messages = [
             {"role": "system", "content": (
                 "You answer questions for aircraft maintenance staff using only the numbered passages from the FAA "
@@ -264,9 +383,10 @@ def ask(question, history=None, mode="fast"):
                 "set insufficient_evidence to true. Never invent values, limits, torque figures or procedures.")},
             {"role": "user", "content": f"Question: {intent['standalone_question'] or question}\n\nSub-questions: {sub_questions}\n\nPassages:\n{passages}"},
         ]
+        t = time.time()
         try:
-            out, _ = chat_json(messages, "answer", ANSWER_SCHEMA, model=model_name("ANSWER_MODEL"),
-                               prompt_version="answer.v1", kind="answer", max_tokens=3000, timeout=CALL_TIMEOUT_S)
+            out, rec = chat_json(messages, "answer", ANSWER_SCHEMA, model=model_name("ANSWER_MODEL"),
+                                 prompt_version="answer.v1", kind="answer", max_tokens=3000, timeout=CALL_TIMEOUT_S)
             answer_md, insufficient = out["answer_markdown"], out["insufficient_evidence"]
             valid_ns = {c["n"] for c in citations}
             sub_out = [{"question": s["question"], "citation_ns": [n for n in s["citation_ns"] if n in valid_ns]}
@@ -274,29 +394,38 @@ def ask(question, history=None, mode="fast"):
             used = {int(n) for n in re.findall(r"\[(\d+)\]", answer_md)}
             if used:
                 citations = [c for c in citations if c["n"] in used]
+            tracer.add("answer", "openrouter.chat", f"{len(answer_md)} chars, cites {sorted(used)}; "
+                       f"insufficient_evidence={insufficient}", t, model=rec["model"], cost=_cost(rec))
         except ProviderError as e:
-            error = _error("provider_unavailable", f"Answer model unavailable; showing the best passages: {e}")
+            error = {"code": "provider_unavailable", "message": f"Answer model unavailable; showing the best passages: {e}"}
             answer_md = "\n\n".join(f"[{c['n']}] {c['section_path']} (p. {c['page_label']}): {c['snippet']}" for c in citations)
+            tracer.add("answer", "openrouter.chat", str(e), t, model=model_name("ANSWER_MODEL"), status="error")
     else:
         answer_md = "The handbook passages found do not support an answer to this question."
+        tracer.add("answer", "openrouter.chat", "skipped: no relevant passages", time.time(),
+                   model=model_name("ANSWER_MODEL"), status="skipped")
 
     coverage = None
     if mode == "verify":
+        t = time.time()
         try:
             from rag.verify import verify_coverage
             coverage = verify_coverage(question, _public_intent(intent), citations, store)
+            for m in coverage.get("missed_sections", []):
+                sec = store["sections"][store["section_index"][m["section_id"]]]
+                m["source"] = source_link(m["page_label"], sec["doc_id"])
+            tracer.add("verify", "rag.verify (metadata sweep + openrouter.chat judge)",
+                       f"{len(store['sections'])} sections swept; relevant chapters {coverage['chapters_relevant']}; "
+                       f"{len(coverage['missed_sections'])} missed", t, model="openai/gpt-4.1-mini")
         except ImportError:
-            coverage = None
-            error = error or _error("provider_unavailable", "Verify sweep is not installed.")
+            error = error or {"code": "provider_unavailable", "message": "Verify sweep is not installed."}
+            tracer.add("verify", "rag.verify", "not installed", t, status="error")
         except TimeoutError as e:
-            error = error or _error("timeout", f"Verify sweep timed out: {e}")
+            error = error or {"code": "timeout", "message": f"Verify sweep timed out: {e}"}
+            tracer.add("verify", "rag.verify", str(e), t, status="error")
         except Exception as e:  # never raise to the UI
-            error = error or _error("provider_unavailable", f"Verify sweep unavailable: {e}")
+            error = error or {"code": "provider_unavailable", "message": f"Verify sweep unavailable: {e}"}
+            tracer.add("verify", "rag.verify", str(e), t, status="error")
 
-    return _result(mode, started, answer_markdown=answer_md, citations=citations, intent=_public_intent(intent),
-                   sub_questions=sub_out, coverage=coverage, insufficient_evidence=insufficient, error=error)
-
-
-def _public_intent(intent):
-    return {"primary": intent["primary"], "intents": intent["intents"], "topics": intent["topics"],
-            "entities": intent["entities"], "needs_clarification": intent["needs_clarification"]}
+    return finish(answer_markdown=answer_md, citations=citations, intent=_public_intent(intent),
+                  sub_questions=sub_out, coverage=coverage, insufficient_evidence=insufficient, error=error)

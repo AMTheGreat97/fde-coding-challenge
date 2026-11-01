@@ -1,0 +1,28 @@
+{
+  "documents": 14,
+  "sections": 1048,
+  "chunks": 1547,
+  "pages_covered": 633,
+  "pages_expected": 633,
+  "sections_enriched": 1048,
+  "sections_failed": 0,
+  "topics_raw": 4013,
+  "topics_dropped_unsupported": 314,
+  "taxonomy_size": 80,
+  "llm_calls": 1753,
+  "llm_cost_usd": 3.3099,
+  "embedding_inputs": 2609,
+  "embedding_model": "openai/text-embedding-3-small",
+  "llm_model": "openai/gpt-4.1-mini",
+  "built_at": "2026-11-01T22:15:29.270041+00:00",
+  "failures": [
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000",
+    "e2 retry failed: e2-retry: output hit max_tokens=8000"
+  ]
+}

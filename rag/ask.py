@@ -74,9 +74,19 @@ def _error(code, message):
     return {"code": code, "message": message}
 
 
+def _content_text(content):
+    """Chat UIs may send content as a string or a list of parts."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(p.get("text", "") if isinstance(p, dict) else str(p) for p in content)
+    return "" if content is None else str(content)
+
+
 def classify_intent(question, history, store):
     turns = (history or [])[-HISTORY_TURNS:]
-    convo = "\n".join(f"{t['role']}: {t['content'][:1000]}" for t in turns)
+    convo = "\n".join(f"{t.get('role', 'user')}: {_content_text(t.get('content'))[:1000]}"
+                      for t in turns if isinstance(t, dict))
     topics = "\n".join(f"{t['topic_id']}\t{t['label']}" for t in store["taxonomy"]["topics"] if t["parent_id"])
     messages = [
         {"role": "system", "content": (
@@ -276,8 +286,11 @@ def ask(question, history=None, mode="fast"):
             from rag.verify import verify_coverage
             coverage = verify_coverage(question, _public_intent(intent), citations, store)
         except ImportError:
-            coverage = None  # verify mode lands with the Codex workstream
-        except ProviderError as e:
+            coverage = None
+            error = error or _error("provider_unavailable", "Verify sweep is not installed.")
+        except TimeoutError as e:
+            error = error or _error("timeout", f"Verify sweep timed out: {e}")
+        except Exception as e:  # never raise to the UI
             error = error or _error("provider_unavailable", f"Verify sweep unavailable: {e}")
 
     return _result(mode, started, answer_markdown=answer_md, citations=citations, intent=_public_intent(intent),

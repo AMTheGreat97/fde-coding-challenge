@@ -1,0 +1,18 @@
+{
+  "_mock": "MOCK fixture: shape is authoritative, content is illustrative",
+  "chunk_id": "ch01.s044.c01",
+  "section_id": "ch01.s044",
+  "doc_id": "ch01_safety-ground-operations-servicing",
+  "chapter": 1,
+  "section_path": "Ch 1 > Unsatisfactory Turbine Engine Starts > Hot Start",
+  "page_label": "1-17",
+  "pdf_page": 38,
+  "token_count": 140,
+  "text": "A hot start occurs when the engine starts, but the exhaust gas temperature exceeds specified limits...",
+  "context_line": "Part of the turbine engine starting procedures in Chapter 1, describing one of three unsatisfactory start conditions.",
+  "topics": [
+    "powerplant.turbine_starting",
+    "safety.engine_fire"
+  ],
+  "embed_text": "Ch 1 > Unsatisfactory Turbine Engine Starts > Hot Start\nPart of the turbine engine starting procedures in Chapter 1, describing one of three unsatisfactory start conditions.\n\nA hot start occurs when the engine starts, but the exhaust gas temperature exceeds specified limits..."
+}

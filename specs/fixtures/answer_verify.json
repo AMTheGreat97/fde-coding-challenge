@@ -1,0 +1,109 @@
+{
+  "_mock": "MOCK fixture: shape is authoritative, content is illustrative",
+  "answer_markdown": "Corrosion on aluminum alloy parts is identified by white or gray powdery deposits [1]. Remove it and treat the surface before restoring the protective finish [2]. Rigid aluminum fluid lines with corrosion pitting beyond limits are replaced [3].",
+  "citations": [
+    {
+      "n": 1,
+      "section_id": "ch08.s010",
+      "doc_id": "ch08_cleaning-corrosion-control",
+      "chapter": 8,
+      "section_path": "Ch 8 > Corrosion of Specific Metals > Aluminum",
+      "page_label": "8-14",
+      "snippet": "Aluminum corrosion appears as a white or gray powder...",
+      "relevance": 3
+    },
+    {
+      "n": 2,
+      "section_id": "ch08.s021",
+      "doc_id": "ch08_cleaning-corrosion-control",
+      "chapter": 8,
+      "section_path": "Ch 8 > Treatment of Corrosion > Aluminum and Aluminum Alloys",
+      "page_label": "8-19",
+      "snippet": "Treatment of aluminum alloy surfaces...",
+      "relevance": 3
+    },
+    {
+      "n": 3,
+      "section_id": "ch09.s007",
+      "doc_id": "ch09_fluid-lines-fittings",
+      "chapter": 9,
+      "section_path": "Ch 9 > Rigid Fluid Lines > Repair of Metal Tube Lines",
+      "page_label": "9-10",
+      "snippet": "Minor dents and scratches in tubing may be repaired...",
+      "relevance": 2
+    }
+  ],
+  "intent": {
+    "primary": "multi_hop",
+    "intents": [
+      "how_to",
+      "troubleshooting"
+    ],
+    "topics": [
+      "corrosion.aluminum_alloys",
+      "fluid_lines.rigid_tubing"
+    ],
+    "entities": [
+      {
+        "text": "aluminum alloy",
+        "type": "material"
+      },
+      {
+        "text": "fluid lines",
+        "type": "component"
+      }
+    ],
+    "needs_clarification": null
+  },
+  "sub_questions": [
+    {
+      "question": "How is corrosion on aluminum alloys identified?",
+      "citation_ns": [
+        1
+      ]
+    },
+    {
+      "question": "How is aluminum corrosion treated?",
+      "citation_ns": [
+        2
+      ]
+    },
+    {
+      "question": "When must corroded aluminum fluid lines be repaired or replaced?",
+      "citation_ns": [
+        3
+      ]
+    }
+  ],
+  "coverage": {
+    "chapters_cited": [
+      8,
+      9
+    ],
+    "chapters_relevant": [
+      2,
+      8,
+      9,
+      10
+    ],
+    "missed_sections": [
+      {
+        "section_id": "ch02.s031",
+        "section_path": "Ch 2 > Maintenance Records > Recording Maintenance",
+        "page_label": "2-12",
+        "reason": "Question implies a repair; record-entry requirements are relevant and were not cited."
+      },
+      {
+        "section_id": "ch10.s018",
+        "section_path": "Ch 10 > Corrosion Inspection",
+        "page_label": "10-15",
+        "reason": "Inspection methods for corrosion match the question's entities."
+      }
+    ],
+    "complete": false
+  },
+  "insufficient_evidence": false,
+  "mode": "verify",
+  "latency_ms": 14800,
+  "error": null
+}

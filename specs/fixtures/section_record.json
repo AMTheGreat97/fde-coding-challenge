@@ -1,0 +1,68 @@
+{
+  "_mock": "MOCK fixture: shape is authoritative, content is illustrative",
+  "section_id": "ch01.s044",
+  "doc_id": "ch01_safety-ground-operations-servicing",
+  "chapter": 1,
+  "title": "Hot Start",
+  "path": [
+    "Safety, Ground Operations, & Servicing",
+    "Unsatisfactory Turbine Engine Starts",
+    "Hot Start"
+  ],
+  "parent_id": "ch01.s043",
+  "level": 3,
+  "heading_source": "markdown",
+  "page_start_label": "1-17",
+  "page_end_label": "1-17",
+  "pdf_pages": [
+    38,
+    38
+  ],
+  "text_chars": 612,
+  "chunk_ids": [
+    "ch01.s044.c01"
+  ],
+  "content_type": "safety",
+  "summary": "Defines a hot start on a turbine engine, where exhaust gas temperature exceeds limits during starting, and the immediate fuel shutoff response.",
+  "topics": [
+    {
+      "topic_id": "powerplant.turbine_starting",
+      "label": "Turbine engine starting",
+      "evidence_quote": "A hot start occurs when the engine starts"
+    },
+    {
+      "topic_id": "safety.engine_fire",
+      "label": "Engine fire and overtemperature",
+      "evidence_quote": "exhaust gas temperature exceeds specified limits"
+    }
+  ],
+  "entities": [
+    {
+      "text": "hot start",
+      "type": "condition",
+      "evidence_quote": "A hot start occurs when the engine starts"
+    },
+    {
+      "text": "exhaust gas temperature",
+      "type": "specification",
+      "evidence_quote": "exhaust gas temperature exceeds specified limits"
+    }
+  ],
+  "keywords": [
+    "hot start",
+    "exhaust gas temperature",
+    "fuel shutoff",
+    "turbine start"
+  ],
+  "questions": [
+    "What is a hot start on a turbine engine?",
+    "What should be done if exhaust gas temperature exceeds limits during start?"
+  ],
+  "cross_refs": [],
+  "enrichment": {
+    "source": "llm",
+    "model": "openai/gpt-4.1-mini",
+    "prompt_version": "e2.v1",
+    "request_sha256": "..."
+  }
+}
